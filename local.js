@@ -5,8 +5,8 @@ var WebSocket = require('ws');
 var key = '4c1ee9d1807b7df183d93528d40ee7be';
 var serverAddress = '127.0.0.1';
 var serverPort = '9999';
-var serverPort = '80';
 
+var socks;
 var srv = socks.createServer(function(info, accept, deny) {
   var socket;
   var serverConnection = new WebSocket('ws://' + serverAddress + ':' + serverPort, {
@@ -18,23 +18,27 @@ var srv = socks.createServer(function(info, accept, deny) {
       dstAddr: info.dstAddr,
       dstPort: info.dstPort,
     };
-    var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
-    serverConnection.send(ciphertext);
+    // var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
+    // serverConnection.send(ciphertext);
+    serverConnection.send(JSON.stringify(obj));
   });
   serverConnection.on('message', function(ciphertext) {
-    var json = cryptico.decryptAESCBC(ciphertext, key);
-    var obj = JSON.parse(json);
+    // var json = cryptico.decryptAESCBC(ciphertext, key);
+    // var obj = JSON.parse(json);
+    var obj = JSON.parse(ciphertext);
     switch (obj.type) {
       case 'connect':
         socket = accept(true);
         if (socket) {
+          var socket_data = 0;
           socket.on('data', function(data) {
             var obj = {
               type: 'req',
               data: data.toString('base64'),
             };
-            var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
-            serverConnection.send(ciphertext);
+            // var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
+            // serverConnection.send(ciphertext);
+            serverConnection.send(JSON.stringify(obj));
           });
           socket.on('error', function(data) {
             serverConnection && serverConnection.close();

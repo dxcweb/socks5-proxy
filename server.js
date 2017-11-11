@@ -12,20 +12,23 @@ var server = new WebSocket.Server({
 server.on('connection', function(connection) {
   var targetConnection = null;
   connection.on('message', function(ciphertext) {
-    var json = cryptico.decryptAESCBC(ciphertext, key);
-    var obj = JSON.parse(json);
+    // var json = cryptico.decryptAESCBC(ciphertext, key);
+    // var obj = JSON.parse(json);
+    var obj = JSON.parse(ciphertext);
     switch (obj.type) {
       case 'connect':
         targetConnection = net.createConnection({ port: obj.dstPort, host: obj.dstAddr, allowHalfOpen: true }, function() {
           var obj = { type: 'connect' };
-          var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
-          connection.send(ciphertext);
+          // var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
+          // connection.send(ciphertext);
+          connection.send(JSON.stringify(obj));
         });
         targetConnection.on('data', function(data) {
           if (connection.readyState == WebSocket.OPEN) {
             var obj = { type: 'body', body: data.toString('base64') };
-            var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
-            connection.send(ciphertext);
+            // var ciphertext = cryptico.encryptAESCBC(JSON.stringify(obj), key);
+            // connection.send(ciphertext);
+            connection.send(JSON.stringify(obj));
           }
         });
         targetConnection.on('error', function(data) {
